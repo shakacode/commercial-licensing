@@ -1,0 +1,40 @@
+name: Licensing documentation task
+description: Create or improve public ShakaCode licensing docs/templates.
+title: "[Licensing Docs]: "
+labels: ["area:licensing", "type:docs", "status:needs-human-review"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What licensing documentation gap does this address?
+    validations:
+      required: true
+  - type: textarea
+    id: proposed
+    attributes:
+      label: Proposed change
+      description: What should change?
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: What must be true before this issue is complete?
+      placeholder: |
+        - [ ] ...
+        - [ ] ...
+    validations:
+      required: true
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Public-safety checklist
+      options:
+        - label: Does not include private strategy, pricing debates, or prospect information.
+          required: true
+        - label: States that product-specific license files control, if applicable.
+          required: true
+        - label: Does not call source-available products open source unless applicable.
+          required: true
