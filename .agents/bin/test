@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+# Verify the portable agent-workflow contract used by this documentation-only repo.
+set -euo pipefail
+cd "$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)"
+
+ruby -e '
+  require "yaml"
+
+  policy = YAML.safe_load(File.read(".agents/agent-workflow.yml", encoding: "UTF-8"), aliases: false)
+  required = %w[
+    base_branch follow_up_prefix review_gate approval_exempt coordination_backend
+    changelog benchmark_labels merge_ledger ci_parity_environment
+    hosted_ci_trigger ci_change_detector
+  ]
+  missing = required.reject { |key| policy.key?(key) && !policy.fetch(key).nil? }
+  abort "missing workflow policy keys: #{missing.join(", ")}" unless missing.empty?
+'

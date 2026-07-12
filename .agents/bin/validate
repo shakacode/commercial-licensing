@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+# Pre-push gate.
+set -euo pipefail
+cd "$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)"
+
+git diff --check
+ruby -e '
+  require "yaml"
+
+  YAML.safe_load(File.read(".agents/agent-workflow.yml", encoding: "UTF-8"), aliases: false)
+  %w[AGENTS.md README.md].each { |path| File.read(path, encoding: "UTF-8") }
+'
