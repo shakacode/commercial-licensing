@@ -66,3 +66,36 @@ git -C "${shallow}" remote set-url origin "${tmpdir}/unreachable-origin.git"
 "${shallow}/.agents/bin/validate"
 git -C "${shallow}" remote remove origin
 "${shallow}/.agents/bin/validate"
+
+# A valid staged replacement must not hide invalid Markdown already committed
+# on the branch, including after a later commit repairs HEAD.
+committed_fixture="${tmpdir}/committed-fixture"
+git init --initial-branch=main "${committed_fixture}" >/dev/null
+git -C "${committed_fixture}" config user.email seam-test@example.invalid
+git -C "${committed_fixture}" config user.name 'Seam Test'
+mkdir -p "${committed_fixture}/.agents/bin"
+cp "${repo_root}/.agents/bin/validate" "${committed_fixture}/.agents/bin/validate"
+cp "${repo_root}/.agents/agent-workflow.yml" "${committed_fixture}/.agents/agent-workflow.yml"
+chmod +x "${committed_fixture}/.agents/bin/validate"
+printf '# valid\n' > "${committed_fixture}/README.md"
+git -C "${committed_fixture}" add .
+git -C "${committed_fixture}" commit -m 'base' >/dev/null
+git -C "${committed_fixture}" checkout -b feature >/dev/null
+printf '# broken \377\n' > "${committed_fixture}/README.md"
+git -C "${committed_fixture}" add README.md
+git -C "${committed_fixture}" commit -m 'invalid committed Markdown' >/dev/null
+
+printf '# repaired\n' > "${committed_fixture}/README.md"
+git -C "${committed_fixture}" add README.md
+if "${committed_fixture}/.agents/bin/validate" >"${tmpdir}/committed-head.out" 2>&1; then
+  echo 'committed invalid UTF-8 unexpectedly passed validation' >&2
+  exit 1
+fi
+grep -q 'invalid UTF-8 in committed HEAD README.md' "${tmpdir}/committed-head.out"
+
+git -C "${committed_fixture}" commit -m 'repair staged Markdown' >/dev/null
+if "${committed_fixture}/.agents/bin/validate" >"${tmpdir}/committed-range.out" 2>&1; then
+  echo 'invalid UTF-8 in commit range unexpectedly passed validation' >&2
+  exit 1
+fi
+grep -q 'invalid UTF-8 in committed ' "${tmpdir}/committed-range.out"

@@ -46,9 +46,9 @@ merge_base="$(git merge-base "${base_ref}" HEAD 2>/dev/null || true)"
 if [[ -n "${merge_base}" ]]; then
   git diff --check "${merge_base}..HEAD"
 else
-  printf 'warning: no merge base for %s and HEAD; skipping base-range whitespace check\n' "${base_ref}" >&2
+  printf 'warning: no merge base for %s and HEAD; skipping base-range whitespace and committed Markdown checks\n' "${base_ref}" >&2
 fi
-ruby -e '
+AGENT_WORKFLOW_MERGE_BASE="${merge_base}" ruby -e '
   require "open3"
   require "yaml"
 
@@ -58,14 +58,42 @@ ruby -e '
     text
   end
 
+  def git_bytes(*arguments)
+    output, status = Open3.capture2("git", *arguments)
+    abort "git #{arguments.join(" ")} failed" unless status.success?
+    output
+  end
+
+  def null_separated_paths(contents)
+    contents.split("\0", -1).reject(&:empty?)
+  end
+
+  def read_git_blob(label, revision, path)
+    object = revision == ":" ? ":#{path}" : "#{revision}:#{path}"
+    read_utf8(label, git_bytes("show", object))
+  end
+
   policy = read_utf8(".agents/agent-workflow.yml", File.binread(".agents/agent-workflow.yml"))
   YAML.safe_load(policy, aliases: false)
 
-  tracked_docs = `git ls-files -z -- "*.md"`.split("\0")
+  tracked_docs = null_separated_paths(git_bytes("ls-files", "-z", "--", "*.md"))
   tracked_docs.each do |path|
     read_utf8(path, File.binread(path)) if File.file?(path)
-    indexed, status = Open3.capture2("git", "show", ":#{path}")
-    abort "unable to read staged document: #{path}" unless status.success?
-    read_utf8("staged #{path}", indexed)
+    read_git_blob("staged #{path}", ":", path)
+    read_git_blob("committed HEAD #{path}", "HEAD", path) if
+      system("git", "cat-file", "-e", "HEAD:#{path}", out: File::NULL, err: File::NULL)
+  end
+
+  merge_base = ENV.fetch("AGENT_WORKFLOW_MERGE_BASE", "").strip
+  unless merge_base.empty?
+    commits = git_bytes("rev-list", "--reverse", "#{merge_base}..HEAD").lines(chomp: true)
+    commits.each do |commit|
+      paths = null_separated_paths(
+        git_bytes("diff-tree", "-r", "--no-commit-id", "--name-only", "-z", "--diff-filter=AMR", "#{commit}^!", "--", "*.md")
+      )
+      paths.each do |path|
+        read_git_blob("committed #{commit} #{path}", commit, path)
+      end
+    end
   end
 '
