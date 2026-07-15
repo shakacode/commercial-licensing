@@ -10,9 +10,10 @@ if ! git check-ref-format --branch "${base_branch}" >/dev/null; then
 fi
 
 base_ref=""
-if ! git rev-parse --verify --quiet "origin/${base_branch}^{commit}" >/dev/null && git remote get-url origin >/dev/null 2>&1; then
-  # Offline and intentionally unreachable remotes are valid local workflows.
-  # A failed refresh must not prevent resolving an already-local base branch.
+# Prefer a current remote base even when a stale remote-tracking ref already
+# exists. Offline and intentionally unreachable remotes remain valid local
+# workflows, so a failed refresh is only fatal when neither base ref resolves.
+if git remote get-url origin >/dev/null 2>&1; then
   git fetch --no-tags origin "+refs/heads/${base_branch}:refs/remotes/origin/${base_branch}" >/dev/null 2>&1 || true
 fi
 for candidate in "origin/${base_branch}" "${base_branch}"; do
