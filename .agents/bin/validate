@@ -4,7 +4,19 @@ set -euo pipefail
 cd "$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)"
 
 base_branch="$(ruby -ryaml -e 'puts YAML.safe_load(File.read(".agents/agent-workflow.yml", encoding: "UTF-8"), aliases: false).fetch("base_branch")')"
+if ! git check-ref-format --branch "${base_branch}" >/dev/null; then
+  printf 'invalid base_branch in .agents/agent-workflow.yml: %s\n' "${base_branch}" >&2
+  exit 1
+fi
+
 base_ref="origin/${base_branch}"
+if ! git rev-parse --verify --quiet "${base_ref}^{commit}" >/dev/null; then
+  git fetch --no-tags origin "+refs/heads/${base_branch}:refs/remotes/origin/${base_branch}"
+fi
+git rev-parse --verify --quiet "${base_ref}^{commit}" >/dev/null || {
+  printf 'unable to resolve base ref: %s\n' "${base_ref}" >&2
+  exit 1
+}
 
 git diff --check
 git diff --cached --check
