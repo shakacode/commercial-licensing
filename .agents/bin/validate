@@ -9,15 +9,20 @@ if ! git check-ref-format --branch "${base_branch}" >/dev/null; then
   exit 1
 fi
 
-base_ref="origin/${base_branch}"
-if ! git rev-parse --verify --quiet "${base_ref}^{commit}" >/dev/null && git remote get-url origin >/dev/null 2>&1; then
-  git fetch --no-tags origin "+refs/heads/${base_branch}:refs/remotes/origin/${base_branch}"
+base_ref=""
+if ! git rev-parse --verify --quiet "origin/${base_branch}^{commit}" >/dev/null && git remote get-url origin >/dev/null 2>&1; then
+  # Offline and intentionally unreachable remotes are valid local workflows.
+  # A failed refresh must not prevent resolving an already-local base branch.
+  git fetch --no-tags origin "+refs/heads/${base_branch}:refs/remotes/origin/${base_branch}" >/dev/null 2>&1 || true
 fi
-if ! git rev-parse --verify --quiet "${base_ref}^{commit}" >/dev/null; then
-  base_ref="${base_branch}"
-fi
-git rev-parse --verify --quiet "${base_ref}^{commit}" >/dev/null || {
-  printf 'unable to resolve base ref: %s\n' "${base_ref}" >&2
+for candidate in "origin/${base_branch}" "${base_branch}"; do
+  if git rev-parse --verify --quiet "${candidate}^{commit}" >/dev/null; then
+    base_ref="${candidate}"
+    break
+  fi
+done
+[[ -n "${base_ref}" ]] || {
+  printf 'unable to resolve base ref: origin/%s or local %s\n' "${base_branch}" "${base_branch}" >&2
   exit 1
 }
 
