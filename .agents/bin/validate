@@ -29,21 +29,43 @@ done
 
 git diff --check
 git diff --cached --check
-# A shallow checkout can have both refs but omit their common ancestor. The
-# three-dot form resolves that ancestor itself and exits before the policy/docs
-# checks below can run. Use it only when the merge base is present; otherwise a
-# two-tree comparison still checks every change introduced by HEAD against the
-# resolved base without requiring more network history.
+# A shallow checkout can have both refs but omit their common ancestor. Refresh
+# both sides from a reachable origin before deciding whether the PR-range check
+# is possible. A direct base-to-HEAD comparison would include unrelated history
+# when the branches do not share an ancestor, so never use it as a substitute.
+if [[ "$(git rev-parse --is-shallow-repository)" == "true" ]] && git remote get-url origin >/dev/null 2>&1; then
+  head_branch="$(git symbolic-ref --quiet --short HEAD 2>/dev/null || true)"
+  fetch_refs=("+refs/heads/${base_branch}:refs/remotes/origin/${base_branch}")
+  if [[ -n "${head_branch}" ]] && git check-ref-format --branch "${head_branch}" >/dev/null; then
+    fetch_refs+=("+refs/heads/${head_branch}:refs/remotes/origin/${head_branch}")
+  fi
+  git fetch --no-tags --unshallow origin "${fetch_refs[@]}" >/dev/null 2>&1 || true
+fi
+
 merge_base="$(git merge-base "${base_ref}" HEAD 2>/dev/null || true)"
 if [[ -n "${merge_base}" ]]; then
   git diff --check "${merge_base}..HEAD"
 else
-  printf 'warning: no merge base for %s and HEAD; using direct base comparison\n' "${base_ref}" >&2
-  git diff --check "${base_ref}" HEAD
+  printf 'warning: no merge base for %s and HEAD; skipping base-range whitespace check\n' "${base_ref}" >&2
 fi
 ruby -e '
+  require "open3"
   require "yaml"
 
-  YAML.safe_load(File.read(".agents/agent-workflow.yml", encoding: "UTF-8"), aliases: false)
-  %w[AGENTS.md README.md].each { |path| File.read(path, encoding: "UTF-8") }
+  def read_utf8(label, contents)
+    text = contents.force_encoding("UTF-8")
+    abort "invalid UTF-8 in #{label}" unless text.valid_encoding?
+    text
+  end
+
+  policy = read_utf8(".agents/agent-workflow.yml", File.binread(".agents/agent-workflow.yml"))
+  YAML.safe_load(policy, aliases: false)
+
+  tracked_docs = `git ls-files -z -- "*.md"`.split("\0")
+  tracked_docs.each do |path|
+    read_utf8(path, File.binread(path)) if File.file?(path)
+    indexed, status = Open3.capture2("git", "show", ":#{path}")
+    abort "unable to read staged document: #{path}" unless status.success?
+    read_utf8("staged #{path}", indexed)
+  end
 '

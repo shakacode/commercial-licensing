@@ -8,7 +8,7 @@ means that capability is n/a here.
 | Script | Purpose | This repo runs |
 | --- | --- | --- |
 | `setup` | Install dependencies | n/a |
-| `validate` | Pre-push gate | Refreshes the configured `origin` base ref whenever `origin` is reachable (including when a remote-tracking ref already exists), then falls back to the existing remote-tracking or local branch when offline; it runs Git whitespace checks for unstaged, staged, and base-to-HEAD content plus UTF-8 and YAML parsing for the repository docs and policy. In shallow history without a merge base, it uses a direct base-to-HEAD comparison rather than failing before those checks run. |
+| `validate` | Pre-push gate | Refreshes the configured `origin` base ref whenever `origin` is reachable (including when a remote-tracking ref already exists), then falls back to the existing remote-tracking or local branch when offline. It runs Git whitespace checks for unstaged and staged content, refreshes shallow history to obtain a merge base before checking the PR range, and clearly skips only that range check when no merge base is available. It also rejects invalid UTF-8 in tracked Markdown documentation (including staged content) and invalid policy YAML. |
 | `test` | Run tests | verify the required portable workflow-policy keys |
 | `lint` | Lint / format | n/a |
 | `build` | Build / type-check | n/a |

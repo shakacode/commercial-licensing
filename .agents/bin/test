@@ -15,3 +15,5 @@ ruby -e '
   missing = required.reject { |key| policy.key?(key) && !policy.fetch(key).nil? }
   abort "missing workflow policy keys: #{missing.join(", ")}" unless missing.empty?
 '
+
+test/validate.sh
