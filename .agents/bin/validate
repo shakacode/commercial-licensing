@@ -29,7 +29,18 @@ done
 
 git diff --check
 git diff --cached --check
-git diff --check "${base_ref}...HEAD"
+# A shallow checkout can have both refs but omit their common ancestor. The
+# three-dot form resolves that ancestor itself and exits before the policy/docs
+# checks below can run. Use it only when the merge base is present; otherwise a
+# two-tree comparison still checks every change introduced by HEAD against the
+# resolved base without requiring more network history.
+merge_base="$(git merge-base "${base_ref}" HEAD 2>/dev/null || true)"
+if [[ -n "${merge_base}" ]]; then
+  git diff --check "${merge_base}..HEAD"
+else
+  printf 'warning: no merge base for %s and HEAD; using direct base comparison\n' "${base_ref}" >&2
+  git diff --check "${base_ref}" HEAD
+fi
 ruby -e '
   require "yaml"
 
