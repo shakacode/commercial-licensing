@@ -89,7 +89,7 @@ AGENT_WORKFLOW_MERGE_BASE="${merge_base}" ruby -e '
     commits = git_bytes("rev-list", "--reverse", "#{merge_base}..HEAD").lines(chomp: true)
     commits.each do |commit|
       paths = null_separated_paths(
-        git_bytes("diff-tree", "-r", "--no-commit-id", "--name-only", "-z", "--diff-filter=AMR", "#{commit}^!", "--", "*.md")
+        git_bytes("diff-tree", "-r", "-m", "--no-commit-id", "--name-only", "-z", "--diff-filter=AMR", commit, "--", "*.md")
       )
       paths.each do |path|
         read_git_blob("committed #{commit} #{path}", commit, path)

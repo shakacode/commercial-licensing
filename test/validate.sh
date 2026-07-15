@@ -99,3 +99,43 @@ if "${committed_fixture}/.agents/bin/validate" >"${tmpdir}/committed-range.out" 
   exit 1
 fi
 grep -q 'invalid UTF-8 in committed ' "${tmpdir}/committed-range.out"
+
+# `git diff-tree` suppresses merge diffs unless it is expanded with `-m`. This
+# fixture puts invalid bytes only in a merge-resolution blob, then restores a
+# valid HEAD, so only full range traversal can detect it.
+merge_fixture="${tmpdir}/merge-fixture"
+git init --initial-branch=main "${merge_fixture}" >/dev/null
+git -C "${merge_fixture}" config user.email seam-test@example.invalid
+git -C "${merge_fixture}" config user.name 'Seam Test'
+mkdir -p "${merge_fixture}/.agents/bin"
+cp "${repo_root}/.agents/bin/validate" "${merge_fixture}/.agents/bin/validate"
+cp "${repo_root}/.agents/agent-workflow.yml" "${merge_fixture}/.agents/agent-workflow.yml"
+chmod +x "${merge_fixture}/.agents/bin/validate"
+printf '# valid\n' > "${merge_fixture}/README.md"
+git -C "${merge_fixture}" add .
+git -C "${merge_fixture}" commit -m 'base' >/dev/null
+git -C "${merge_fixture}" checkout -b feature >/dev/null
+printf '# feature\n' > "${merge_fixture}/merge-history.md"
+git -C "${merge_fixture}" add merge-history.md
+git -C "${merge_fixture}" commit -m 'add feature markdown' >/dev/null
+git -C "${merge_fixture}" checkout -b merge-history-side main >/dev/null
+printf '# side\n' > "${merge_fixture}/merge-history.md"
+git -C "${merge_fixture}" add merge-history.md
+git -C "${merge_fixture}" commit -m 'add side markdown' >/dev/null
+git -C "${merge_fixture}" checkout feature >/dev/null
+if git -C "${merge_fixture}" merge --no-ff merge-history-side -m 'merge markdown histories' >/dev/null 2>&1; then
+  echo 'expected merge-history fixture to conflict' >&2
+  exit 1
+fi
+printf '# broken \377\n' > "${merge_fixture}/merge-history.md"
+git -C "${merge_fixture}" add merge-history.md
+git -C "${merge_fixture}" commit -m 'resolve markdown history' >/dev/null
+invalid_merge="$(git -C "${merge_fixture}" rev-parse HEAD)"
+printf '# restored\n' > "${merge_fixture}/merge-history.md"
+git -C "${merge_fixture}" add merge-history.md
+git -C "${merge_fixture}" commit -m 'restore markdown history' >/dev/null
+if "${merge_fixture}/.agents/bin/validate" >"${tmpdir}/merge-history.out" 2>&1; then
+  echo 'invalid Markdown introduced by a merge commit unexpectedly passed validation' >&2
+  exit 1
+fi
+grep -q "invalid UTF-8 in committed ${invalid_merge} merge-history.md" "${tmpdir}/merge-history.out"
