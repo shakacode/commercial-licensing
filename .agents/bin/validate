@@ -3,7 +3,12 @@
 set -euo pipefail
 cd "$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)"
 
+base_branch="$(ruby -ryaml -e 'puts YAML.safe_load(File.read(".agents/agent-workflow.yml", encoding: "UTF-8"), aliases: false).fetch("base_branch")')"
+base_ref="origin/${base_branch}"
+
 git diff --check
+git diff --cached --check
+git diff --check "${base_ref}...HEAD"
 ruby -e '
   require "yaml"
 

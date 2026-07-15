@@ -8,7 +8,7 @@ means that capability is n/a here.
 | Script | Purpose | This repo runs |
 | --- | --- | --- |
 | `setup` | Install dependencies | n/a |
-| `validate` | Pre-push gate | Git whitespace check plus UTF-8 and YAML parsing for the repository docs and policy |
+| `validate` | Pre-push gate | Git whitespace checks for unstaged, staged, and base-to-HEAD content, plus UTF-8 and YAML parsing for the repository docs and policy |
 | `test` | Run tests | verify the required portable workflow-policy keys |
 | `lint` | Lint / format | n/a |
 | `build` | Build / type-check | n/a |
