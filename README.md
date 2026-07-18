@@ -16,16 +16,22 @@ binding license terms in any product repository.
 
 ## Product summaries
 
-- React on Rails Pro — commercial production-use license
-- ShakaPerf — source-available / commercial license for private professional use
+- [React on Rails Pro](docs/product-license-matrix.md) — commercial production-use license
+- [ShakaPerf](docs/product-license-matrix.md) — source-available / commercial license for private professional use
 
 ## Templates
 
-- file headers
-- README license summaries
-- AGENTS.md licensing instructions
-- report attribution language
-- package metadata examples
+- [file headers](templates/file-headers.md)
+- [README license summaries](templates/README-license-section.md)
+- [AGENTS.md licensing instructions](templates/AGENTS-license-section.md)
+- [report attribution language](templates/report-attribution.md)
+- [package metadata examples](templates/package-metadata.md)
+
+## Public docs
+
+- [Trust-Based Commercial Licensing](docs/trust-based-commercial-licensing.md)
+- [Product license matrix](docs/product-license-matrix.md)
+- [FAQ](docs/faq.md)
 
 ## Important note
 
