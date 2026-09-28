@@ -2,7 +2,20 @@
 
 Use compact SPDX-style headers. Do not paste the full license into every file.
 
-## ShakaPerf BUSL files
+## When not to add file headers
+
+Do not add source-code file headers to:
+
+- generated reports or generated artifacts
+- vendored third-party code that already has its own license notice
+- short config files where a header would be noisy and the repo-level license is clear
+- files where the product repo has a more specific convention
+
+Use the binding license file in the product repository as the source of truth.
+
+## TypeScript / JavaScript
+
+### ShakaPerf BUSL files
 
 ```ts
 /*
@@ -15,7 +28,7 @@ Use compact SPDX-style headers. Do not paste the full license into every file.
  */
 ```
 
-## React on Rails Pro files
+### React on Rails Pro files
 
 ```ts
 /*
@@ -28,7 +41,7 @@ Use compact SPDX-style headers. Do not paste the full license into every file.
  */
 ```
 
-## MIT files
+### MIT files
 
 ```ts
 /*
@@ -36,6 +49,63 @@ Use compact SPDX-style headers. Do not paste the full license into every file.
  *
  * SPDX-License-Identifier: MIT
  */
+```
+
+## Ruby
+
+```ruby
+# Copyright (c) 2026 ShakaCode LLC.
+#
+# SPDX-License-Identifier: LicenseRef-ReactOnRailsPro
+#
+# This file is part of React on Rails Pro. Use is governed by the
+# React on Rails Pro License in REACT-ON-RAILS-PRO-LICENSE.md.
+```
+
+For MIT Ruby files:
+
+```ruby
+# Copyright (c) 2026 ShakaCode LLC.
+# SPDX-License-Identifier: MIT
+```
+
+## Shell
+
+Keep the shebang first:
+
+```bash
+#!/usr/bin/env bash
+# Copyright (c) 2026 ShakaCode LLC.
+# SPDX-License-Identifier: BUSL-1.1
+#
+# This file is part of ShakaPerf. Use is governed by the Business Source
+# License 1.1 and the ShakaPerf Additional Use Grant in LICENSE.md.
+```
+
+## YAML
+
+```yaml
+# Copyright (c) 2026 ShakaCode LLC.
+# SPDX-License-Identifier: BUSL-1.1
+#
+# This file is part of ShakaPerf. Use is governed by the Business Source
+# License 1.1 and the ShakaPerf Additional Use Grant in LICENSE.md.
+```
+
+## Markdown
+
+Use markdown comments only when the file needs file-level licensing context.
+Most README and documentation files should rely on the repo-level license
+section instead.
+
+```md
+<!--
+Copyright (c) 2026 ShakaCode LLC.
+SPDX-License-Identifier: LicenseRef-ReactOnRailsPro
+
+This file is part of React on Rails Pro. Use is governed by the
+React on Rails Pro License in REACT-ON-RAILS-PRO-LICENSE.md.
+-->
 ```
 
 ## Generated reports
