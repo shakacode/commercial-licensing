@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+# This documentation-only repository has no dependencies to install.
+set -euo pipefail
