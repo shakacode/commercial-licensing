@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 # Pre-push gate.
 set -euo pipefail
-cd "$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)"
+cd "$(CDPATH= cd -- "$(dirname -- "$0")/../../.." && pwd)"
 
-base_branch="$(ruby -ryaml -e 'puts YAML.safe_load(File.read(".agents/agent-workflow.yml", encoding: "UTF-8"), aliases: false).fetch("base_branch")')"
+base_branch="$(ruby -ryaml -e 'puts YAML.safe_load(File.read(".agents/shaka/config.yml", encoding: "UTF-8"), aliases: false).fetch("base_branch")')"
 if ! git check-ref-format --branch "${base_branch}" >/dev/null; then
-  printf 'invalid base_branch in .agents/agent-workflow.yml: %s\n' "${base_branch}" >&2
+  printf 'invalid base_branch in .agents/shaka/config.yml: %s\n' "${base_branch}" >&2
   exit 1
 fi
 
@@ -73,7 +73,7 @@ AGENT_WORKFLOW_MERGE_BASE="${merge_base}" ruby -e '
     read_utf8(label, git_bytes("show", object))
   end
 
-  policy = read_utf8(".agents/agent-workflow.yml", File.binread(".agents/agent-workflow.yml"))
+  policy = read_utf8(".agents/shaka/config.yml", File.binread(".agents/shaka/config.yml"))
   YAML.safe_load(policy, aliases: false)
 
   tracked_docs = null_separated_paths(git_bytes("ls-files", "-z", "--", "*.md"))

@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+# Verify the Shaka settings this documentation-only repo needs.
+set -euo pipefail
+cd "$(CDPATH= cd -- "$(dirname -- "$0")/../../.." && pwd)"
+
+ruby -e '
+  require "yaml"
+
+  policy = YAML.safe_load(File.read(".agents/shaka/config.yml", encoding: "UTF-8"), aliases: false)
+  required = %w[version base_branch review merge]
+  missing = required.reject { |key| policy.key?(key) && !policy.fetch(key).nil? }
+  abort "missing Shaka settings: #{missing.join(", ")}" unless missing.empty?
+'
+
+test/validate.sh

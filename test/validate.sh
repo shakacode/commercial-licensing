@@ -13,11 +13,11 @@ mkdir -p "${fixture}"
 git init --initial-branch=main "${fixture}" >/dev/null
 git -C "${fixture}" config user.email seam-test@example.invalid
 git -C "${fixture}" config user.name 'Seam Test'
-mkdir -p "${fixture}/.agents/bin"
-cp "${repo_root}/.agents/agent-workflow.yml" "${fixture}/.agents/agent-workflow.yml"
-cp "${repo_root}/.agents/bin/validate" "${fixture}/.agents/bin/validate"
+mkdir -p "${fixture}/.agents/shaka/bin"
+cp "${repo_root}/.agents/shaka/config.yml" "${fixture}/.agents/shaka/config.yml"
+cp "${repo_root}/.agents/shaka/bin/validate" "${fixture}/.agents/shaka/bin/validate"
 cp "${repo_root}/AGENTS.md" "${repo_root}/CLAUDE.md" "${repo_root}/README.md" "${fixture}/"
-cp "${repo_root}/.agents/bin/README.md" "${fixture}/.agents/bin/README.md"
+cp "${repo_root}/.agents/shaka/bin/README.md" "${fixture}/.agents/shaka/bin/README.md"
 git -C "${fixture}" add .
 git -C "${fixture}" commit -m 'base' >/dev/null
 git -C "${fixture}" checkout -b feature >/dev/null
@@ -35,7 +35,7 @@ git -C "${fixture}" push origin main >/dev/null
 expected_base="$(git -C "${fixture}" rev-parse main)"
 
 git clone --depth 1 --branch feature "file://${origin}" "${shallow}" >/dev/null
-"${shallow}/.agents/bin/validate" >"${tmpdir}/validate.out" 2>"${tmpdir}/validate.err"
+"${shallow}/.agents/shaka/bin/validate" >"${tmpdir}/validate.out" 2>"${tmpdir}/validate.err"
 if grep -q 'skipping base-range' "${tmpdir}/validate.err"; then
   echo 'shallow clone did not recover a merge base' >&2
   exit 1
@@ -45,7 +45,7 @@ fi
 printf '\377\n' > "${shallow}/README.md"
 git -C "${shallow}" add README.md
 git -C "${shallow}" show HEAD:README.md > "${shallow}/README.md"
-if "${shallow}/.agents/bin/validate" >"${tmpdir}/invalid-utf8.out" 2>"${tmpdir}/invalid-utf8.err"; then
+if "${shallow}/.agents/shaka/bin/validate" >"${tmpdir}/invalid-utf8.out" 2>"${tmpdir}/invalid-utf8.err"; then
   echo 'staged invalid UTF-8 unexpectedly passed validation' >&2
   exit 1
 fi
@@ -55,7 +55,7 @@ git -C "${shallow}" reset --hard HEAD >/dev/null
 printf 'trailing whitespace \n' > "${shallow}/README.md"
 git -C "${shallow}" add README.md
 git -C "${shallow}" show HEAD:README.md > "${shallow}/README.md"
-if "${shallow}/.agents/bin/validate" >"${tmpdir}/staged-whitespace.out" 2>"${tmpdir}/staged-whitespace.err"; then
+if "${shallow}/.agents/shaka/bin/validate" >"${tmpdir}/staged-whitespace.out" 2>"${tmpdir}/staged-whitespace.err"; then
   echo 'staged whitespace unexpectedly passed validation' >&2
   exit 1
 fi
@@ -63,9 +63,9 @@ grep -q 'trailing whitespace' "${tmpdir}/staged-whitespace.out"
 git -C "${shallow}" reset --hard HEAD >/dev/null
 
 git -C "${shallow}" remote set-url origin "${tmpdir}/unreachable-origin.git"
-"${shallow}/.agents/bin/validate"
+"${shallow}/.agents/shaka/bin/validate"
 git -C "${shallow}" remote remove origin
-"${shallow}/.agents/bin/validate"
+"${shallow}/.agents/shaka/bin/validate"
 
 # A valid staged replacement must not hide invalid Markdown already committed
 # on the branch, including after a later commit repairs HEAD.
@@ -73,10 +73,10 @@ committed_fixture="${tmpdir}/committed-fixture"
 git init --initial-branch=main "${committed_fixture}" >/dev/null
 git -C "${committed_fixture}" config user.email seam-test@example.invalid
 git -C "${committed_fixture}" config user.name 'Seam Test'
-mkdir -p "${committed_fixture}/.agents/bin"
-cp "${repo_root}/.agents/bin/validate" "${committed_fixture}/.agents/bin/validate"
-cp "${repo_root}/.agents/agent-workflow.yml" "${committed_fixture}/.agents/agent-workflow.yml"
-chmod +x "${committed_fixture}/.agents/bin/validate"
+mkdir -p "${committed_fixture}/.agents/shaka/bin"
+cp "${repo_root}/.agents/shaka/bin/validate" "${committed_fixture}/.agents/shaka/bin/validate"
+cp "${repo_root}/.agents/shaka/config.yml" "${committed_fixture}/.agents/shaka/config.yml"
+chmod +x "${committed_fixture}/.agents/shaka/bin/validate"
 printf '# valid\n' > "${committed_fixture}/README.md"
 git -C "${committed_fixture}" add .
 git -C "${committed_fixture}" commit -m 'base' >/dev/null
@@ -87,14 +87,14 @@ git -C "${committed_fixture}" commit -m 'invalid committed Markdown' >/dev/null
 
 printf '# repaired\n' > "${committed_fixture}/README.md"
 git -C "${committed_fixture}" add README.md
-if "${committed_fixture}/.agents/bin/validate" >"${tmpdir}/committed-head.out" 2>&1; then
+if "${committed_fixture}/.agents/shaka/bin/validate" >"${tmpdir}/committed-head.out" 2>&1; then
   echo 'committed invalid UTF-8 unexpectedly passed validation' >&2
   exit 1
 fi
 grep -q 'invalid UTF-8 in committed HEAD README.md' "${tmpdir}/committed-head.out"
 
 git -C "${committed_fixture}" commit -m 'repair staged Markdown' >/dev/null
-if "${committed_fixture}/.agents/bin/validate" >"${tmpdir}/committed-range.out" 2>&1; then
+if "${committed_fixture}/.agents/shaka/bin/validate" >"${tmpdir}/committed-range.out" 2>&1; then
   echo 'invalid UTF-8 in commit range unexpectedly passed validation' >&2
   exit 1
 fi
@@ -107,10 +107,10 @@ merge_fixture="${tmpdir}/merge-fixture"
 git init --initial-branch=main "${merge_fixture}" >/dev/null
 git -C "${merge_fixture}" config user.email seam-test@example.invalid
 git -C "${merge_fixture}" config user.name 'Seam Test'
-mkdir -p "${merge_fixture}/.agents/bin"
-cp "${repo_root}/.agents/bin/validate" "${merge_fixture}/.agents/bin/validate"
-cp "${repo_root}/.agents/agent-workflow.yml" "${merge_fixture}/.agents/agent-workflow.yml"
-chmod +x "${merge_fixture}/.agents/bin/validate"
+mkdir -p "${merge_fixture}/.agents/shaka/bin"
+cp "${repo_root}/.agents/shaka/bin/validate" "${merge_fixture}/.agents/shaka/bin/validate"
+cp "${repo_root}/.agents/shaka/config.yml" "${merge_fixture}/.agents/shaka/config.yml"
+chmod +x "${merge_fixture}/.agents/shaka/bin/validate"
 printf '# valid\n' > "${merge_fixture}/README.md"
 git -C "${merge_fixture}" add .
 git -C "${merge_fixture}" commit -m 'base' >/dev/null
@@ -134,7 +134,7 @@ invalid_merge="$(git -C "${merge_fixture}" rev-parse HEAD)"
 printf '# restored\n' > "${merge_fixture}/merge-history.md"
 git -C "${merge_fixture}" add merge-history.md
 git -C "${merge_fixture}" commit -m 'restore markdown history' >/dev/null
-if "${merge_fixture}/.agents/bin/validate" >"${tmpdir}/merge-history.out" 2>&1; then
+if "${merge_fixture}/.agents/shaka/bin/validate" >"${tmpdir}/merge-history.out" 2>&1; then
   echo 'invalid Markdown introduced by a merge commit unexpectedly passed validation' >&2
   exit 1
 fi
