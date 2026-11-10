@@ -20,9 +20,9 @@ if (!['proposed', 'approved'].includes(STATUS)) throw new Error(`unknown status 
 const out = join(here, 'releases', LICENSE_VERSION);
 const manifestPath = join(out, 'manifest.json');
 
-function committedFile(path) {
+function gitOutput(args) {
   try {
-    return execFileSync('git', ['show', `HEAD:license/releases/${path}`], {
+    return execFileSync('git', args, {
       cwd: dirname(here),
       encoding: 'utf8',
       stdio: ['ignore', 'pipe', 'ignore'],
@@ -32,34 +32,42 @@ function committedFile(path) {
   }
 }
 
-let committedVersions = [];
-try {
-  committedVersions = execFileSync('git', ['ls-tree', '--name-only', 'HEAD:license/releases'], {
-    cwd: dirname(here),
-    encoding: 'utf8',
-    stdio: ['ignore', 'pipe', 'ignore'],
-  }).trim().split('\n');
-} catch {
-  // A new source has no committed releases yet.
-}
-for (const version of new Set([...readdirSync(join(here, 'releases')), ...committedVersions])) {
+const releaseHistory = gitOutput(['log', '--format=', '--name-only', 'HEAD', '--', 'license/releases']);
+const historicalVersions = (releaseHistory || '').split('\n').flatMap((path) => {
+  const match = path.match(/^license\/releases\/([^/]+)\/manifest\.json$/);
+  return match ? [match[1]] : [];
+});
+for (const version of new Set([...readdirSync(join(here, 'releases')), ...historicalVersions])) {
   if (!version) continue;
   const relative = `${version}/manifest.json`;
-  const committed = committedFile(relative);
   const currentPath = join(here, 'releases', relative);
   const current = existsSync(currentPath) ? readFileSync(currentPath, 'utf8') : null;
-  const approvedCommitted = committed && JSON.parse(committed).status === 'approved';
-  const baseline = approvedCommitted ? committed : current;
+  const commits = (gitOutput(['log', '--reverse', '--format=%H', 'HEAD', '--',
+    `license/releases/${relative}`]) || '').trim().split('\n');
+  let approvedCommit = null;
+  let baseline = current;
+  for (const commit of commits) {
+    const candidate = gitOutput(['show', `${commit}:license/releases/${relative}`]);
+    if (candidate && JSON.parse(candidate).status === 'approved') {
+      approvedCommit = commit;
+      baseline = candidate;
+      break;
+    }
+  }
   if (!baseline || JSON.parse(baseline).status !== 'approved') continue;
-  if (approvedCommitted && current !== committed) {
+  if (gitOutput(['rev-parse', '--is-shallow-repository'])?.trim() === 'true') {
+    throw new Error(`approved release ${version} requires complete Git history`);
+  }
+  if (approvedCommit && current !== baseline) {
     throw new Error(`approved release ${version} changed; bump the version in source/license.json`);
   }
   for (const product of Object.values(JSON.parse(baseline).products)) {
     const filePath = join(here, 'releases', version, product.file);
     const bytes = existsSync(filePath) ? readFileSync(filePath) : null;
-    const expected = approvedCommitted ? committedFile(`${version}/${product.file}`) : null;
+    const expected = approvedCommit ? gitOutput(['show',
+      `${approvedCommit}:license/releases/${version}/${product.file}`]) : null;
     if (!bytes || createHash('sha256').update(bytes).digest('hex') !== product.sha256 ||
-        (approvedCommitted && (expected === null || !bytes.equals(Buffer.from(expected))))) {
+        (approvedCommit && (expected === null || !bytes.equals(Buffer.from(expected))))) {
       throw new Error(`approved release ${version} changed; bump the version in source/license.json`);
     }
   }
@@ -89,6 +97,13 @@ for (const file of readdirSync(join(src, 'products')).filter((f) => f.endsWith('
   const summary = readFileSync(join(src, 'summaries', `${slug}.md`), 'utf8').trimEnd();
   const machine = readFileSync(join(src, 'machine', `${slug}.yaml`), 'utf8').trimEnd();
   const history = readFileSync(join(src, 'history', `${slug}.md`), 'utf8').trimEnd();
+  if (!common.includes(`${LICENSE_NAME}, version ${LICENSE_VERSION}, applied to {{PRODUCT_NAME}}`) ||
+      !meta.spdx.startsWith(`LicenseRef-ShakaStack-${LICENSE_VERSION}-`) ||
+      !machine.includes(`license_name: ${LICENSE_NAME} ${LICENSE_VERSION}`) ||
+      !machine.includes(`spdx_identifier: ${meta.spdx}`) ||
+      !history.startsWith(`${LICENSE_NAME} ${LICENSE_VERSION} `)) {
+    throw new Error(`source version mismatch for ${slug}; update source text for ${LICENSE_VERSION}`);
+  }
   const compiled = common
     .replace('{{STATUS_NOTICE}}', STATUS_NOTICE)
     .replace('{{SPDX_ID}}', meta.spdx)

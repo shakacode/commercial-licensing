@@ -184,8 +184,20 @@ grep -q 'bump the version in source/license.json' "${tmpdir}/immutable.out"
 
 ruby -e 'p = ARGV.fetch(0); File.binwrite(p, File.binread(p)[0...-1])' "${build_fixture}/license/source/common-terms.md"
 ruby -rjson -e 'p = ARGV.fetch(0); x = JSON.parse(File.read(p)); x["version"] = "1.1"; File.write(p, JSON.pretty_generate(x) + "\n")' "${build_fixture}/license/source/license.json"
+if node "${build_fixture}/license/build.mjs" >"${tmpdir}/version.out" 2>&1; then
+  echo 'version mismatch unexpectedly built' >&2
+  exit 1
+fi
+grep -q 'source version mismatch' "${tmpdir}/version.out"
+ruby -e 'Dir.glob("#{ARGV.fetch(0)}/license/source/**/*").select { |p| File.file?(p) }.each { |p| text = File.read(p).gsub("The ShakaStack License 1.0", "The ShakaStack License 1.1").gsub("The ShakaStack License, version 1.0", "The ShakaStack License, version 1.1").gsub("LicenseRef-ShakaStack-1.0", "LicenseRef-ShakaStack-1.1"); File.write(p, text) }' "${build_fixture}"
 node "${build_fixture}/license/build.mjs" >"${tmpdir}/next-version.out"
+git -C "${build_fixture}" add .
+git -C "${build_fixture}" commit -m 'next version fixture' >/dev/null
 printf 'x' >> "${build_fixture}/license/releases/1.0/LICENSE-shakaperf.md"
+rubydigest="${build_fixture}/license/releases/1.0/LICENSE-shakaperf.md"
+ruby -rjson -rdigest -e 'p, f = ARGV; x = JSON.parse(File.read(p)); x["products"]["shakaperf"]["sha256"] = Digest::SHA256.file(f).hexdigest; File.write(p, JSON.pretty_generate(x) + "\n")' "${build_fixture}/license/releases/1.0/manifest.json" "${rubydigest}"
+git -C "${build_fixture}" add .
+git -C "${build_fixture}" commit -m 'alter historical fixture' >/dev/null
 if node "${build_fixture}/license/build.mjs" --check >"${tmpdir}/history.out" 2>&1; then
   echo 'changed historical release unexpectedly passed the build check' >&2
   exit 1
