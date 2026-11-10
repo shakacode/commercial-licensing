@@ -170,12 +170,27 @@ grep -q 'counsel marker' "${tmpdir}/marker.out"
 
 ruby -e 'Dir.glob("#{ARGV.fetch(0)}/license/source/**/*.md").each { |p| File.write(p, File.read(p).gsub(/\[COUNSEL-\d+\]/, "Counsel resolved")) }' "${build_fixture}"
 node "${build_fixture}/license/build.mjs" >"${tmpdir}/approved.out"
+git init --initial-branch=main "${build_fixture}" >/dev/null
+git -C "${build_fixture}" config user.email seam-test@example.invalid
+git -C "${build_fixture}" config user.name 'Seam Test'
+git -C "${build_fixture}" add .
+git -C "${build_fixture}" commit -m 'approved fixture' >/dev/null
 printf 'x' >> "${build_fixture}/license/source/common-terms.md"
 if node "${build_fixture}/license/build.mjs" >"${tmpdir}/immutable.out" 2>&1; then
   echo 'approved release unexpectedly changed' >&2
   exit 1
 fi
 grep -q 'bump the version in source/license.json' "${tmpdir}/immutable.out"
+
+ruby -e 'p = ARGV.fetch(0); File.binwrite(p, File.binread(p)[0...-1])' "${build_fixture}/license/source/common-terms.md"
+ruby -rjson -e 'p = ARGV.fetch(0); x = JSON.parse(File.read(p)); x["version"] = "1.1"; File.write(p, JSON.pretty_generate(x) + "\n")' "${build_fixture}/license/source/license.json"
+node "${build_fixture}/license/build.mjs" >"${tmpdir}/next-version.out"
+printf 'x' >> "${build_fixture}/license/releases/1.0/LICENSE-shakaperf.md"
+if node "${build_fixture}/license/build.mjs" --check >"${tmpdir}/history.out" 2>&1; then
+  echo 'changed historical release unexpectedly passed the build check' >&2
+  exit 1
+fi
+grep -q 'approved release 1.0 changed' "${tmpdir}/history.out"
 
 printf 'unknown license bytes\n' > "${tmpdir}/unknown.txt"
 if node "${repo_root}/license/check-fleet.mjs" --file "${tmpdir}/unknown.txt" >"${tmpdir}/unknown.out" 2>&1; then

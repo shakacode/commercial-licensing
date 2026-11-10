@@ -4,6 +4,7 @@
 // No dependencies. Usage: node build.mjs [--check]
 import { readFileSync, writeFileSync, readdirSync, mkdirSync, existsSync } from 'node:fs';
 import { createHash } from 'node:crypto';
+import { execFileSync } from 'node:child_process';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -18,6 +19,51 @@ const { license: LICENSE_NAME, version: LICENSE_VERSION, status: STATUS } = JSON
 if (!['proposed', 'approved'].includes(STATUS)) throw new Error(`unknown status ${STATUS}`);
 const out = join(here, 'releases', LICENSE_VERSION);
 const manifestPath = join(out, 'manifest.json');
+
+function committedFile(path) {
+  try {
+    return execFileSync('git', ['show', `HEAD:license/releases/${path}`], {
+      cwd: dirname(here),
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'ignore'],
+    });
+  } catch {
+    return null;
+  }
+}
+
+let committedVersions = [];
+try {
+  committedVersions = execFileSync('git', ['ls-tree', '--name-only', 'HEAD:license/releases'], {
+    cwd: dirname(here),
+    encoding: 'utf8',
+    stdio: ['ignore', 'pipe', 'ignore'],
+  }).trim().split('\n');
+} catch {
+  // A new source has no committed releases yet.
+}
+for (const version of new Set([...readdirSync(join(here, 'releases')), ...committedVersions])) {
+  if (!version) continue;
+  const relative = `${version}/manifest.json`;
+  const committed = committedFile(relative);
+  const currentPath = join(here, 'releases', relative);
+  const current = existsSync(currentPath) ? readFileSync(currentPath, 'utf8') : null;
+  const approvedCommitted = committed && JSON.parse(committed).status === 'approved';
+  const baseline = approvedCommitted ? committed : current;
+  if (!baseline || JSON.parse(baseline).status !== 'approved') continue;
+  if (approvedCommitted && current !== committed) {
+    throw new Error(`approved release ${version} changed; bump the version in source/license.json`);
+  }
+  for (const product of Object.values(JSON.parse(baseline).products)) {
+    const filePath = join(here, 'releases', version, product.file);
+    const bytes = existsSync(filePath) ? readFileSync(filePath) : null;
+    const expected = approvedCommitted ? committedFile(`${version}/${product.file}`) : null;
+    if (!bytes || createHash('sha256').update(bytes).digest('hex') !== product.sha256 ||
+        (approvedCommitted && (expected === null || !bytes.equals(Buffer.from(expected))))) {
+      throw new Error(`approved release ${version} changed; bump the version in source/license.json`);
+    }
+  }
+}
 const STATUS_NOTICE =
   STATUS === 'proposed'
     ? '**Status: proposed text, pending counsel review. Not in force.** The\n`[COUNSEL-n]` markers are open points listed in `license/COUNSEL.md` at\nhttps://github.com/shakacode/commercial-licensing. This notice and the\nmarkers are removed before this text ships in any release.\n\n'
