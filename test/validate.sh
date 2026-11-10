@@ -6,6 +6,13 @@ repo_root="$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)"
 tmpdir="$(mktemp -d)"
 trap 'rm -rf "${tmpdir}"' EXIT
 
+copy_license_fixture() {
+  local destination="$1"
+  mkdir -p "${destination}/license"
+  cp -R "${repo_root}/license/source" "${repo_root}/license/releases" "${destination}/license/"
+  cp "${repo_root}/license/build.mjs" "${destination}/license/build.mjs"
+}
+
 fixture="${tmpdir}/fixture"
 origin="${tmpdir}/origin.git"
 shallow="${tmpdir}/shallow"
@@ -18,6 +25,7 @@ cp "${repo_root}/.agents/shaka/config.yml" "${fixture}/.agents/shaka/config.yml"
 cp "${repo_root}/.agents/shaka/bin/validate" "${fixture}/.agents/shaka/bin/validate"
 cp "${repo_root}/AGENTS.md" "${repo_root}/CLAUDE.md" "${repo_root}/README.md" "${fixture}/"
 cp "${repo_root}/.agents/shaka/bin/README.md" "${fixture}/.agents/shaka/bin/README.md"
+copy_license_fixture "${fixture}"
 git -C "${fixture}" add .
 git -C "${fixture}" commit -m 'base' >/dev/null
 git -C "${fixture}" checkout -b feature >/dev/null
@@ -76,6 +84,7 @@ git -C "${committed_fixture}" config user.name 'Seam Test'
 mkdir -p "${committed_fixture}/.agents/shaka/bin"
 cp "${repo_root}/.agents/shaka/bin/validate" "${committed_fixture}/.agents/shaka/bin/validate"
 cp "${repo_root}/.agents/shaka/config.yml" "${committed_fixture}/.agents/shaka/config.yml"
+copy_license_fixture "${committed_fixture}"
 chmod +x "${committed_fixture}/.agents/shaka/bin/validate"
 printf '# valid\n' > "${committed_fixture}/README.md"
 git -C "${committed_fixture}" add .
@@ -110,6 +119,7 @@ git -C "${merge_fixture}" config user.name 'Seam Test'
 mkdir -p "${merge_fixture}/.agents/shaka/bin"
 cp "${repo_root}/.agents/shaka/bin/validate" "${merge_fixture}/.agents/shaka/bin/validate"
 cp "${repo_root}/.agents/shaka/config.yml" "${merge_fixture}/.agents/shaka/config.yml"
+copy_license_fixture "${merge_fixture}"
 chmod +x "${merge_fixture}/.agents/shaka/bin/validate"
 printf '# valid\n' > "${merge_fixture}/README.md"
 git -C "${merge_fixture}" add .
@@ -139,3 +149,37 @@ if "${merge_fixture}/.agents/shaka/bin/validate" >"${tmpdir}/merge-history.out" 
   exit 1
 fi
 grep -q "invalid UTF-8 in committed ${invalid_merge} merge-history.md" "${tmpdir}/merge-history.out"
+
+build_fixture="${tmpdir}/build-fixture"
+copy_license_fixture "${build_fixture}"
+node "${build_fixture}/license/build.mjs" --check
+printf 'x' >> "${build_fixture}/license/releases/1.0/LICENSE-shakaperf.md"
+if node "${build_fixture}/license/build.mjs" --check >"${tmpdir}/drift.out" 2>&1; then
+  echo 'changed release unexpectedly passed the build check' >&2
+  exit 1
+fi
+grep -q 'DRIFT:' "${tmpdir}/drift.out"
+cp "${repo_root}/license/releases/1.0/LICENSE-shakaperf.md" "${build_fixture}/license/releases/1.0/LICENSE-shakaperf.md"
+
+ruby -rjson -e 'p = ARGV.fetch(0); x = JSON.parse(File.read(p)); x["status"] = "approved"; File.write(p, JSON.pretty_generate(x) + "\n")' "${build_fixture}/license/source/license.json"
+if node "${build_fixture}/license/build.mjs" >"${tmpdir}/marker.out" 2>&1; then
+  echo 'approved text with counsel markers unexpectedly built' >&2
+  exit 1
+fi
+grep -q 'counsel marker' "${tmpdir}/marker.out"
+
+ruby -e 'Dir.glob("#{ARGV.fetch(0)}/license/source/**/*.md").each { |p| File.write(p, File.read(p).gsub(/\[COUNSEL-\d+\]/, "Counsel resolved")) }' "${build_fixture}"
+node "${build_fixture}/license/build.mjs" >"${tmpdir}/approved.out"
+printf 'x' >> "${build_fixture}/license/source/common-terms.md"
+if node "${build_fixture}/license/build.mjs" >"${tmpdir}/immutable.out" 2>&1; then
+  echo 'approved release unexpectedly changed' >&2
+  exit 1
+fi
+grep -q 'bump the version in source/license.json' "${tmpdir}/immutable.out"
+
+printf 'unknown license bytes\n' > "${tmpdir}/unknown.txt"
+if node "${repo_root}/license/check-fleet.mjs" --file "${tmpdir}/unknown.txt" >"${tmpdir}/unknown.out" 2>&1; then
+  echo 'unknown license unexpectedly passed the fleet check' >&2
+  exit 1
+fi
+grep -q 'unknown digest' "${tmpdir}/unknown.out"

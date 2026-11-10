@@ -1,0 +1,34 @@
+{
+  "license": "The ShakaStack License",
+  "version": "1.0",
+  "status": "proposed",
+  "products": {
+    "inertia-rails-ssr-cache": {
+      "name": "Inertia Rails SSR Cache",
+      "file": "LICENSE-inertia-rails-ssr-cache.md",
+      "sha256": "74fb0064bc0d625259934f6d9fbe5329ab7483341ee1070a53521ca26c31fcbb",
+      "spdx": "LicenseRef-ShakaStack-1.0-InertiaRailsSsrCache",
+      "version_marker": "The ShakaStack License, version 1.0, applied to Inertia Rails SSR Cache",
+      "packages": "[inertia_rails_ssr_cache, inertia-rails-ssr-cache]",
+      "previous_license": "The Inertia Rails SSR Cache License 1.0"
+    },
+    "react-on-rails-pro": {
+      "name": "React on Rails Pro",
+      "file": "LICENSE-react-on-rails-pro.md",
+      "sha256": "e1a5d7d4602c734e3f400731a2f9317ceafc41a6141790dadb511c40166b56fa",
+      "spdx": "LicenseRef-ShakaStack-1.0-ReactOnRailsPro",
+      "version_marker": "The ShakaStack License, version 1.0, applied to React on Rails Pro",
+      "packages": "[react_on_rails_pro, react-on-rails-pro, react-on-rails-pro-node-renderer, react-on-rails-rsc]",
+      "previous_license": "The React on Rails Pro License 3.0"
+    },
+    "shakaperf": {
+      "name": "ShakaPerf",
+      "file": "LICENSE-shakaperf.md",
+      "sha256": "a0f922f3cbcd2343e663a8880d5ff589227d6227b00acad71b09e0baa700b3de",
+      "spdx": "LicenseRef-ShakaStack-1.0-ShakaPerf",
+      "version_marker": "The ShakaStack License, version 1.0, applied to ShakaPerf",
+      "packages": "[shaka-perf, shaka-shared, shaka-bundle-size, shaka-accessibility]",
+      "previous_license": "The ShakaPerf License 1.0"
+    }
+  }
+}

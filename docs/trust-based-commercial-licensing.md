@@ -6,7 +6,7 @@ source-available products.
 ## Core principle
 
 > Free to learn, evaluate, demo, and use for qualifying open-source projects.
-> Paid when the software creates private business value.
+> Paid when a product's license defines a use as covered by a subscription.
 
 ## Why trust-based?
 
@@ -38,10 +38,7 @@ Depending on the product-specific license, free use may include:
 Depending on the product-specific license, paid use may include:
 
 - production use
-- private repo use
-- private CI/CD
-- automated PR checks
-- coding-agent workflows
+- ongoing ShakaPerf use on private code, including CI, pull request checks, and agent workflows after evaluation
 - performance-regression gates
 - private hosted reports
 - paid client work

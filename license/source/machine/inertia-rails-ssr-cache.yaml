@@ -1,0 +1,32 @@
+license_name: The ShakaStack License 1.0
+product: Inertia Rails SSR Cache
+spdx_identifier: LicenseRef-ShakaStack-1.0-InertiaRailsSsrCache
+type: trust-based commercial
+use_model: served_software   # covered use is serving end users or supporting a live application
+free_line_if_all:
+  max_org_headcount_fte: 10        # exclusive; whole control group
+  max_ttm_revenue_usd: 1000000     # exclusive; trailing 12 months
+  max_lifetime_outside_capital_usd: 1000000  # exclusive
+free_line_if_any:
+  - charity                        # recognized charitable / public-benefit org, any size
+  - educational_institution        # school, college, university, any size
+  - hospital                       # licensed inpatient care provider, any size
+always_free: [read, study, development, test, ci, staging, preview, review_apps, evaluate_in_production_45_days_per_org_per_product, education, personal, oss_projects]
+free_environment_condition: solely_development_testing_verification_or_demonstration_before_production
+covered_use: [serving_end_users, background_work_supporting_live_applications, internal_apps_for_staff, apps_operated_for_customers]
+environment_matters: true          # actual purpose controls, not the environment's name
+subscription: ShakaStack Pro
+subscription_scope: whole organization, every affiliate, application, environment, server and developer
+subscription_size_limit: none
+included_products: [react_on_rails_pro, shakaperf, inertia_rails_ssr_cache]
+license_key: none
+runtime_enforcement: none  # no activation, no telemetry, no lockout
+attribution_required: false
+subscription_lapse_grace_days: 30
+outgrow_free_line_grace_days: 60
+per_version_terms: true
+version_line: major.minor
+pricing_url: https://pro.reactonrails.com/
+purchase_url: https://pro.reactonrails.com/
+register_url: https://pro.reactonrails.com/
+contact: contact@shakacode.com
