@@ -32,6 +32,9 @@ function gitOutput(args) {
   }
 }
 
+if (gitOutput(['rev-parse', '--is-shallow-repository'])?.trim() === 'true') {
+  throw new Error('complete Git history required for license build');
+}
 const releaseHistory = gitOutput(['log', '--format=', '--name-only', 'HEAD', '--', 'license/releases']);
 const historicalVersions = (releaseHistory || '').split('\n').flatMap((path) => {
   const match = path.match(/^license\/releases\/([^/]+)\/manifest\.json$/);
@@ -55,9 +58,6 @@ for (const version of new Set([...readdirSync(join(here, 'releases')), ...histor
     }
   }
   if (!baseline || JSON.parse(baseline).status !== 'approved') continue;
-  if (gitOutput(['rev-parse', '--is-shallow-repository'])?.trim() === 'true') {
-    throw new Error(`approved release ${version} requires complete Git history`);
-  }
   if (approvedCommit && current !== baseline) {
     throw new Error(`approved release ${version} changed; bump the version in source/license.json`);
   }

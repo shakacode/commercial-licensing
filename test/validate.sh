@@ -204,6 +204,24 @@ if node "${build_fixture}/license/build.mjs" --check >"${tmpdir}/history.out" 2>
 fi
 grep -q 'approved release 1.0 changed' "${tmpdir}/history.out"
 
+history_origin="${tmpdir}/history-origin.git"
+history_shallow="${tmpdir}/history-shallow"
+git init --bare "${history_origin}" >/dev/null
+git -C "${build_fixture}" remote add origin "${history_origin}"
+git -C "${build_fixture}" push origin main >/dev/null
+git clone --depth 1 --branch main "file://${history_origin}" "${history_shallow}" >/dev/null
+if node "${history_shallow}/license/build.mjs" --check >"${tmpdir}/shallow-history.out" 2>&1; then
+  echo 'shallow history unexpectedly passed the build check' >&2
+  exit 1
+fi
+grep -q 'complete Git history required' "${tmpdir}/shallow-history.out"
+git -C "${history_shallow}" fetch --unshallow origin >/dev/null
+if node "${history_shallow}/license/build.mjs" --check >"${tmpdir}/full-history.out" 2>&1; then
+  echo 'altered approved history unexpectedly passed the build check' >&2
+  exit 1
+fi
+grep -q 'approved release 1.0 changed' "${tmpdir}/full-history.out"
+
 printf 'unknown license bytes\n' > "${tmpdir}/unknown.txt"
 if node "${repo_root}/license/check-fleet.mjs" --file "${tmpdir}/unknown.txt" >"${tmpdir}/unknown.out" 2>&1; then
   echo 'unknown license unexpectedly passed the fleet check' >&2
