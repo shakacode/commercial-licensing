@@ -31,3 +31,10 @@ binding license terms in any product repository.
 
 Nothing in this repository is legal advice. Binding license terms should be
 reviewed by counsel before publication.
+
+## Shared license source
+
+The complete license file delivered with a product release governs that release.
+The proposed ShakaStack License texts are written in [`license/`](license/README.md)
+for future product releases. Version 1.0 is pending counsel review and is not in force.
+This public repository contains no private sales notes or confidential strategy.

@@ -1,0 +1,10 @@
+[
+  {"repository":"shakacode/shakaperf","branch":"main","path":"LICENSE.md"},
+  {"repository":"shakacode/react_on_rails","branch":"main","path":"REACT-ON-RAILS-PRO-LICENSE.md"},
+  {"repository":"shakacode/react_on_rails","branch":"main","path":"react_on_rails_pro/LICENSE"},
+  {"repository":"shakacode/react_on_rails","branch":"main","path":"packages/react-on-rails-pro/LICENSE.md"},
+  {"repository":"shakacode/react_on_rails","branch":"main","path":"packages/react-on-rails-pro-node-renderer/LICENSE.md"},
+  {"repository":"shakacode/react_on_rails_rsc","branch":"main","path":"LICENSE.md","canonical_block":{"after":"## Canonical Commercial Terms","starts_with":"# The","ends_before":"\n## Third-Party Notices\n"}},
+  {"repository":"shakacode/inertia_rails_ssr_cache","branch":"main","path":"LICENSE.md"},
+  {"repository":"shakacode/inertia_rails_ssr_cache","branch":"main","path":"packages/inertia-rails-ssr-cache/LICENSE.md"}
+]

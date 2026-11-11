@@ -1,0 +1,31 @@
+license_name: The ShakaStack License 1.0
+product: ShakaPerf
+spdx_identifier: LicenseRef-ShakaStack-1.0-ShakaPerf
+type: source-available, trust-based commercial
+use_model: development_tool   # covered use is any non-free use, in any environment
+free_line_if_all:
+  max_org_headcount_fte: 10        # exclusive; whole control group
+  max_ttm_revenue_usd: 1000000     # exclusive; trailing 12 months
+  max_lifetime_outside_capital_usd: 1000000  # exclusive
+free_line_if_any:
+  - charity                        # recognized charitable / public-benefit org, any size
+  - educational_institution        # school, college, university, any size
+  - hospital                       # licensed inpatient care provider, any size
+always_free: [read, study, evaluate_45_days_per_org_per_product, education, personal, oss_projects, attributed_public_reports_non_automated]
+covered_use: [private_code_after_evaluation, ci, pr_checks, scheduled_runs, agent_workflows, regression_gates, interactive_runs_for_org_work, private_reports, services_built_on_it]
+environment_matters: false         # staging, CI, or production targets do not change the answer
+subscription: ShakaStack Pro
+subscription_scope: whole organization, every affiliate, repository, pipeline, agent and developer
+subscription_size_limit: none
+included_products: [react_on_rails_pro, shakaperf, inertia_rails_ssr_cache]
+license_key: none
+runtime_enforcement: none  # no keys, no telemetry, no lockout; registration optional
+report_attribution_required_in_free_use: true
+subscription_lapse_grace_days: 30
+outgrow_free_line_grace_days: 60
+per_version_terms: true
+version_line: major.minor
+pricing_url: https://shakaperf.com/pricing
+purchase_url: https://pro.reactonrails.com/
+register_url: https://shakaperf.com/license
+contact: contact@shakacode.com
