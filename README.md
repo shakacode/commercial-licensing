@@ -29,12 +29,13 @@ binding license terms in any product repository.
 
 ## Important note
 
-Nothing in this repository is legal advice. Binding license terms should be
-reviewed by counsel before publication.
+Nothing in this repository is legal advice. ShakaCode approved The ShakaStack
+License 1.0 and the coverage notice on 2026-11-11 without a counsel review.
 
 ## Shared license source
 
 The complete license file delivered with a product release governs that release.
-The proposed ShakaStack License texts are written in [`license/`](license/README.md)
-for future product releases. Version 1.0 is pending counsel review and is not in force.
+The approved ShakaStack License texts are written in [`license/`](license/README.md)
+for future product releases. Version 1.0 was approved on 2026-11-11. The coverage
+notice for earlier releases is effective from that date.
 This public repository contains no private sales notes or confidential strategy.

@@ -1,8 +1,8 @@
 # Free & Pro FAQ
 
-This FAQ summarizes The ShakaStack License 1.0, which is proposed text pending counsel
-review, and the ShakaStack Pro coverage notice. The complete license delivered with a
-release controls that release.
+This FAQ summarizes The ShakaStack License 1.0, approved by ShakaCode on
+2026-11-11, and the ShakaStack Pro coverage notice, effective the same day.
+The complete license delivered with a release controls that release.
 
 ## What does ShakaStack Pro include?
 
@@ -73,7 +73,7 @@ covers the agency's own work, not its clients.
 
 No. Your subscription counts as ShakaStack Pro while it stays active. It covers ShakaPerf and
 Inertia Rails SSR Cache for your whole organization at no extra charge: on earlier releases
-through the coverage notice, once that notice is in effect, and on new releases through the
+through the coverage notice effective 2026-11-11, and on new releases through the
 license. Earlier releases keep their other terms.
 
 ## Does a sponsorship or a free key count?

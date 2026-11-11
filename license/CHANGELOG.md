@@ -1,6 +1,6 @@
 # ShakaStack License changelog
 
-## 1.0 (proposed, pending counsel review)
+## 1.0 (approved 2026-11-11)
 
 The first common text. It replaces three product licenses for new releases only.
 Every released version keeps the exact text it shipped with (see `archive/`).
