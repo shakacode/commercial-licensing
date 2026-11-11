@@ -97,3 +97,5 @@ AGENT_WORKFLOW_MERGE_BASE="${merge_base}" ruby -e '
     end
   end
 '
+
+node license/build.mjs --check
