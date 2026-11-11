@@ -3,7 +3,7 @@
 This directory is the single source of ShakaCode's commercial license text for React on
 Rails Pro, ShakaPerf, and Inertia Rails SSR Cache.
 
-**Status: version 1.0 is proposed text, pending counsel review. It is not in force.**
+**Status: version 1.0 was approved by ShakaCode on 2026-11-11 without a counsel review.**
 
 ## What is binding
 

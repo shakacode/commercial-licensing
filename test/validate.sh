@@ -158,17 +158,17 @@ if node "${build_fixture}/license/build.mjs" --check >"${tmpdir}/drift.out" 2>&1
   echo 'changed release unexpectedly passed the build check' >&2
   exit 1
 fi
-grep -q 'DRIFT:' "${tmpdir}/drift.out"
+grep -q 'approved release 1.0 changed' "${tmpdir}/drift.out"
 cp "${repo_root}/license/releases/1.0/LICENSE-shakaperf.md" "${build_fixture}/license/releases/1.0/LICENSE-shakaperf.md"
 
-ruby -rjson -e 'p = ARGV.fetch(0); x = JSON.parse(File.read(p)); x["status"] = "approved"; File.write(p, JSON.pretty_generate(x) + "\n")' "${build_fixture}/license/source/license.json"
+printf '[COUNSEL-1]\n' >> "${build_fixture}/license/source/common-terms.md"
 if node "${build_fixture}/license/build.mjs" >"${tmpdir}/marker.out" 2>&1; then
   echo 'approved text with counsel markers unexpectedly built' >&2
   exit 1
 fi
 grep -q 'counsel marker' "${tmpdir}/marker.out"
 
-ruby -e 'Dir.glob("#{ARGV.fetch(0)}/license/source/**/*.md").each { |p| File.write(p, File.read(p).gsub(/\[COUNSEL-\d+\]/, "Counsel resolved")) }' "${build_fixture}"
+cp "${repo_root}/license/source/common-terms.md" "${build_fixture}/license/source/common-terms.md"
 node "${build_fixture}/license/build.mjs" >"${tmpdir}/approved.out"
 git init --initial-branch=main "${build_fixture}" >/dev/null
 git -C "${build_fixture}" config user.email seam-test@example.invalid

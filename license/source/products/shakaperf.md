@@ -59,7 +59,7 @@ ShakaPerf free. Whether a use of ShakaPerf is free is decided only by
 Section A4 and Section B3 of this file, never by the environment rule of
 another ShakaStack product's license (Section A16). A person's use of the
 Software on an organization's code or for an organization's work is use by
-that organization, not a personal project under Section A4(d). [COUNSEL-6]
+that organization, not a personal project under Section A4(d).
 
 Section B3(a) covers only the generation of a qualifying public report. It
 does not exempt ongoing work on private code, or any other Covered Use,

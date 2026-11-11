@@ -1,14 +1,12 @@
-# Points for counsel review
+# Open legal points
 
-Status of every file in this directory: business intent pending counsel review,
-not legal advice, not approved. Each point below is marked inline as
-`[COUNSEL-n]` in the source and the compiled editions, except COUNSEL-12, which
-belongs to the coverage notice. Clause references are to the compiled files in
-`releases/1.0/`. When counsel has answered, the markers come out,
-`source/license.json` moves to `approved`, and the build refuses any marker that
-is left. The notice gets its own approval.
+ShakaCode approved The ShakaStack License 1.0 and the coverage notice on
+2026-11-11 without a counsel review. The points below remain open questions
+for any later legal review. They no longer appear as markers in the license
+text or the notice. Clause references are to the compiled files in
+`releases/1.0/`.
 
-| # | Clause | Question for counsel |
+| # | Clause | Open question |
 |---|---|---|
 | COUNSEL-1 | A2 "ShakaStack Pro" | The subscription is defined by its commercial name and by a channel ShakaCode designates in writing. Is that enough to bind the licensor to the scope in A6, and to let ShakaCode move the purchase address later without a new license version? Should a designation have to be published, not merely written? |
 | COUNSEL-2 | A2 "Version line", A12 | The released texts promise that "patch and security releases of a version line remain under that line's terms" without defining version line. This text defines it as major.minor, prospectively, and does not reinterpret the old phrase. react-on-rails-rsc already binds its major.minor to the React runtime line; the other products have no written rule. Is it safe to ship this text in the next minor of each product (ShakaPerf 0.8.0, React on Rails Pro 17.3.0, Inertia Rails SSR Cache 0.2.0, react-on-rails-rsc at its next React runtime minor)? If counsel prefers the next major, the three products move there and no other text changes; react-on-rails-rsc then waits for a real new runtime line, because a license-only renumbering breaks its version policy. The coverage notice works either way. |

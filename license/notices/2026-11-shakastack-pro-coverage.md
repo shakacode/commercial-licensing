@@ -2,9 +2,7 @@
 
 Issued by ShakaCode LLC.
 
-**Effective date: none yet. This is proposed text, pending counsel review, and
-it is not in force.** ShakaCode replaces this line with the effective date when
-the notice is approved. [COUNSEL-12]
+**Effective date: 2026-11-11.**
 
 This notice grants additional subscription coverage for earlier releases of
 React on Rails Pro including react-on-rails-rsc, ShakaPerf, and Inertia Rails
